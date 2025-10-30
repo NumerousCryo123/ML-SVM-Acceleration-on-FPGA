@@ -1,0 +1,81 @@
+#include "svm.h"
+#include <math.h>
+#include "alphas.h"
+#include "svs.h"
+
+static t_bias bias = -0.1796875;
+static t_kernal gamma = 0.001;
+
+t_kernal cordic_exp_minus(t_kernal z);
+
+void svm(t_data image1[IMAGE_SIZE/4], t_data image2[IMAGE_SIZE/4], t_data image3[IMAGE_SIZE/4], t_data image4[IMAGE_SIZE/4], bool *result) {
+    t_data image_copy[IMAGE_SIZE];
+
+    // Load data in parallel while computing the outer loop
+    #pragma HLS dataflow
+    #pragma HLS stream variable=image_copy depth=4
+    for (int i = 0; i < IMAGE_SIZE/4; i++) {
+        image_copy[i] = image1[i];
+        image_copy[i + IMAGE_SIZE/4] = image2[i];
+        image_copy[i + IMAGE_SIZE/2] = image3[i];
+        image_copy[i + IMAGE_SIZE*3/4] = image4[i];
+    }
+
+    ap_fixed<17, 10, AP_RND, AP_SAT> sum = 0.0;
+
+    // For each support vector
+    Outerloop: for (int i = 0; i < NSV; i++) {
+        ap_ufixed<17, 15> kernal_val = 0.0;
+        
+        // For each image pixel (Inner loop processing can be pipelined)
+        Innerloop: for (int j = 0; j < IMAGE_SIZE; j++) {
+            ap_fixed<8, 7> val_root = (t_svs)(svs[i * IMAGE_SIZE + j]) - image_copy[j];
+            ap_ufixed<17, 15> temp1 = val_root * val_root;
+            kernal_val += temp1;
+        }
+
+        // Compute the kernel value and add it to the sum
+        t_kernal kernal = cordic_exp_minus(gamma * kernal_val);
+        sum += alphas[i] * kernal;
+    }
+
+    // Final bias addition
+    sum += bias;
+
+    // Set the result
+    *result = (sum[sum.wl() - 1] == 0);
+}
+
+t_kernal cordic_exp_minus(t_kernal z) {
+    // Normalise
+    if (z > (ln2 << MAX_POW_LN2)) {
+        return 0.0;
+    } else {
+        int shifts = 0;
+        for (int i = MAX_POW_LN2 - 1; i >= 0; i--) {
+            if (z > (ln2 << i)) {
+                z -= (ln2 << i);
+                shifts += (1 << i);
+            }
+        }
+        t_kernal x = INIT_X;
+        t_kernal y = 0.0;
+        for (int i = 1; i <= ITERATIONS; i++) {
+            t_kernal new_x, new_y, new_z;
+            if (z >= 0) {
+                new_x = x + (y >> i);
+                new_y = y + (x >> i);
+                new_z = z - atanh_arr[i - 1];
+            } else {
+                new_x = x - (y >> i);
+                new_y = y - (x >> i);
+                new_z = z + atanh_arr[i - 1];
+            }
+            x = new_x;
+            y = new_y;
+            z = new_z;
+        }
+        z = (x - y) >> shifts;
+        return z;
+    }
+}

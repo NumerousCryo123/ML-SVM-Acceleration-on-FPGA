@@ -1,0 +1,27 @@
+# Build directories and files
+**/build/**
+**/Debug/**
+**.exe
+
+# Output files
+c_example/scores.txt
+*.log
+*.lock
+
+# Ignore vivado project
+vivado_project/
+
+# Ignore uneeded sdk files
+vivado_sdk/.metadata/
+vivado_sdk/RemoteSystemsTempFiles/
+vivado_sdk/webtalk/
+vivado_sdk/.sdk/
+# Can regenerate from .hdf file
+vivado_sdk/*hw_platform*/
+
+# Vivado HLS
+hls_project/base/.autopilot/
+hls_project/base/impl
+hls_project/base/syn/
+hls_project/base/sim/
+hls_project/*log*.xml

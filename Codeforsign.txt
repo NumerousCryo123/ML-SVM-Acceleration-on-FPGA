@@ -1,0 +1,72 @@
+def predict(W, X):
+        """ Return class label after each setp """
+        return np.where(net_input(W, X) >= 0.0, 1, -1)
+     
+
+def net_input(W, X):
+        """ Calculate net input """
+        return np.dot(X, W[1:]) + W[0]
+     
+
+def plot_boundary(W, X):
+    """Function to plot the boundary defined by the weights. Given equation."""
+    """w0 + w1*x1 + w2*x2 = 0, used to generate the line."""
+
+    # Calculate the slope and y-intercept of the boundary line
+    slope = -W[1] / W[2]
+    intercept = -W[0] / W[2]
+
+    # Get the minimum and maximum x values from the dataset
+    x_min = np.min(X[:, 0])
+    x_max = np.max(X[:, 0])
+
+    # Generate points for the boundary line to cover the whole plot
+    x_vals = np.array([x_min, x_max])
+    y_vals = slope * x_vals + intercept
+
+    # This part here define the x-axis and y-axis style according to the data we are using
+    plt.figure(figsize=(5, 4))
+    plt.scatter(X[:50, 0], X[:50, 1], color='red', marker='o', label='Setosa')
+    plt.scatter(X[50:100, 0], X[50:100, 1], color='blue', marker='o', label='Virginica')
+    plt.title("Sepal Length vs Petal Length")
+    plt.xlabel('Sepal Length')
+    plt.ylabel('Petal Length')
+    plt.legend(loc='upper left')
+
+    # Plot the line using the calculated points
+    plt.plot(x_vals, y_vals, 'black')
+
+    plt.show()
+     
+
+def plot_errors(error):
+    """ Function to plot number of misclassified samples """
+    plt.plot(range(1, len(error) + 1), error,marker='o')
+    plt.xlabel('Iterations')
+    plt.ylabel('Number of misclassifications')
+    plt.show()
+     
+
+def fit(n_iter, X, y):
+        W = np.zeros(1 + X.shape[1])
+        errors_ = []
+        for i in range(n_iter):
+            for j, (xi, target) in enumerate(zip(X,y)):
+         #     update = target - predict(W, xi)
+         #     W += 0.5*update*np.append(1,xi)
+              if predict(W, xi) != target:
+                  W = W + target * np.append(1,xi)
+            # errors on whole dataset
+            errors = 0
+            for j, (xi, target) in enumerate(zip(X, y)):
+                if predict(W, xi) != target:
+                    errors += 1
+            # -------------------------------------------
+            errors_.append(errors)
+            i += 1
+            print ("Iteration: ", i)
+            print("Weights: ", W)
+            print("Misclassified Samples: ", errors)
+            plot_boundary(W,X) # When weights are updated we plot the boundary
+        plot_errors(errors_)
+     

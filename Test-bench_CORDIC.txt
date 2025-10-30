@@ -1,0 +1,43 @@
+module testbench;
+
+    // Declare the signals
+    reg clk = 0;
+    reg reset = 0;
+    reg [63:0] data_out;
+
+    // Constant data values (64-bit values)
+    reg [63:0] data_0 = 64'b0000000000000000000000000000000000000000000000000000000000001010; // 10
+    reg [63:0] data_1 = 64'b0000000000000000000000000000000000000000000000000000000000010100; // 20
+    reg [63:0] data_2 = 64'b0000000000000000000000000000000000000000000000000000000000011110; // 30
+    reg [63:0] data_3 = 64'b0000000000000000000000000000000000000000000000000000000000101000; // 40
+    reg [63:0] data_4 = 64'b0000000000000000000000000000000000000000000000000000000000110010; // 50
+
+    // Clock generation
+    always begin
+        #10 clk = ~clk; // Toggle clock every 10 time units
+    end
+
+    // Sequential process to output data on each clock cycle
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            data_out <= 64'b0; // Reset output data
+        end else begin
+            case (data_out)
+                64'b0000000000000000000000000000000000000000000000000000000000001010: data_out <= data_1;
+                64'b0000000000000000000000000000000000000000000000000000000000010100: data_out <= data_2;
+                64'b0000000000000000000000000000000000000000000000000000000000011110: data_out <= data_3;
+                64'b0000000000000000000000000000000000000000000000000000000000101000: data_out <= data_4;
+                64'b0000000000000000000000000000000000000000000000000000000000110010: data_out <= data_0; // Reset back to the first value
+                default: data_out <= data_0; // Default case, reset to first value
+            endcase
+        end
+    end
+
+    // Initial block to apply a reset at the beginning
+    initial begin
+        // Initial reset
+        reset = 1;
+        #20 reset = 0;
+    end
+
+endmodule

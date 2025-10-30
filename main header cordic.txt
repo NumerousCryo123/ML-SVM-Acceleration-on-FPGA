@@ -1,0 +1,12 @@
+#include <iostream>
+#include "header.h"
+
+int main() {
+    // Test the CORDIC e^-x calculation
+    double x = 2.0; // You can change the value of x here
+    double result = cordic_exp_minus_x(x);
+
+    std::cout << "e^(-" << x << ") = " << result << std::endl;
+
+    return 0;
+}

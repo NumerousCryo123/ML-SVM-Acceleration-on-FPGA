@@ -1,0 +1,17 @@
+#include "header.h"
+
+// CORDIC algorithm to calculate e^-x using series expansion
+double cordic_exp_minus_x(double x) {
+    double result = 1.0;  // First term in the series (e^0 = 1)
+    double term = 1.0;    // Variable to hold each term in the series
+    long long factorial = 1;  // Factorial value for each term
+
+    // Set precision and number of iterations
+    int iterations = 20;
+    for (int i = 1; i <= iterations; i++) {
+        term *= x / i;  // Calculate the next term (x^i / i!)
+        result += (i % 2 == 0 ? term : -term);  // Alternate adding and subtracting terms
+    }
+
+    return result;
+}

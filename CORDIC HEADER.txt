@@ -1,0 +1,12 @@
+#ifndef CORDIC_EXP_H
+#define CORDIC_EXP_H
+
+#include "ap_fixed.h"
+
+#define ITER 16
+
+// Function prototype for computing exp(x) using hyperbolic CORDIC.
+// The result is computed as exp(x) = cosh(x) + sinh(x).
+void cordic_exp(ap_fixed<32,16> x, ap_fixed<32,16> *exp_out);
+
+#endif // CORDIC_EXP_H

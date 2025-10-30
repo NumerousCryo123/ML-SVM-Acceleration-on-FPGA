@@ -1,0 +1,1 @@
+write_project_tcl -force ../vivado_project.tcl
